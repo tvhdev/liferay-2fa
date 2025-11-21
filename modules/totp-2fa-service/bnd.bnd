@@ -5,11 +5,11 @@ Bundle-ClassPath:\
   .,\
   lib/java-otp-0.1.0.jar,\
   lib/two-factor-auth-1.0.jar,\
-  lib/commons-codec-1.13.jar
+  lib/commons-codec-1.15.jar
 -includeresource:\
   lib/java-otp-0.1.0.jar=java-otp-0.1.0.jar,\
   lib/two-factor-auth-1.0.jar=two-factor-auth-1.0.jar,\
-  lib/commons-codec-1.13.jar=commons-codec-1.13.jar
+  lib/commons-codec-1.15.jar=commons-codec-1.15.jar
 Export-Package: \
 	com.mw.totp_2fa.config,\
 	com.mw.totp_2fa.api,\

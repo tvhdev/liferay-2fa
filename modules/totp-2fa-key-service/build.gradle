@@ -2,7 +2,7 @@ dependencies {
 	compileOnly group: "com.liferay.portal", name: "release.portal.api"
 		
 	//Apache Commons
-	compile group: "commons-codec", name: "commons-codec", version: "1.13"
+	implementation group: "commons-codec", name: "commons-codec", version: "1.15"
 	
 	compileOnly project(":modules:totp-2fa-key-api")
 }

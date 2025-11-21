@@ -1,8 +1,8 @@
 dependencies {
-	compileOnly group: "com.liferay.portal", name: "release.portal.api"
-	compileOnly group: "commons-codec", name: "commons-codec", version: "1.9"
-	
-	//TOTP 2FA Implementations
-	compile group: "com.eatthepath", name: "java-otp", version :"0.1.0"
-	compile group: "com.j256.two-factor-auth", name: "two-factor-auth", version :"1.0"
+    compileOnly group: "com.liferay.portal", name: "release.portal.api"
+
+    // Embed these third‑party libraries in your module
+    implementation group: "commons-codec", name: "commons-codec", version: "1.15"
+    implementation group: "com.eatthepath", name: "java-otp", version: "0.1.0"
+    implementation group: "com.j256.two-factor-auth", name: "two-factor-auth", version: "1.0"
 }

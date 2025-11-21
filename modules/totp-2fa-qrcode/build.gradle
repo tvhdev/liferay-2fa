@@ -1,23 +1,23 @@
 dependencies {
 	compileOnly group: "com.liferay.portal", name: "release.portal.api"
-	compile group: "commons-codec", name: "commons-codec", version: "1.13"
-	compile "org.jsoup:jsoup:1.14.3"
-	compile group: 'org.xbib', name: 'jsr-305', version: '1.0.0'
+	implementation group: "commons-codec", name: "commons-codec", version: "1.15"
+	implementation "org.jsoup:jsoup:1.14.3"
+	implementation group: 'org.xbib', name: 'jsr-305', version: '1.0.0'
 		
 	//Mail
 	compileOnly group: "javax.mail", name: "mail", version :"1.4"
 
 	//QR Code
-    compile group: "com.google.zxing", name: "javase", version: "3.3.0"	    
-    compile group: "com.google.zxing", name: "core", version: "3.3.0"
-    compile group: "com.beust", name: "jcommander", version: "1.72"
-    compile group: "com.github.jai-imageio", name: "jai-imageio-core", version: "1.4.0"
+    implementation group: "com.google.zxing", name: "javase", version: "3.3.0"	    
+    implementation group: "com.google.zxing", name: "core", version: "3.3.0"
+    implementation group: "com.beust", name: "jcommander", version: "1.72"
+    implementation group: "com.github.jai-imageio", name: "jai-imageio-core", version: "1.4.0"
     
 	//JWT Token Generation
-	compile group: "com.auth0", name: "java-jwt", version :"3.4.0"
-	compile group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.7"
-	compile group: "com.fasterxml.jackson.core", name: 'jackson-core', version: "2.9.7"
-	compile group: "com.fasterxml.jackson.core", name: 'jackson-databind', version: "2.9.7"
+	implementation group: "com.auth0", name: "java-jwt", version :"3.4.0"
+	implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.9.7"
+	implementation group: "com.fasterxml.jackson.core", name: 'jackson-core', version: "2.9.7"
+	implementation group: "com.fasterxml.jackson.core", name: 'jackson-databind', version: "2.9.7"
 	
     compileOnly project(":modules:totp-2fa-service")
     compileOnly project(":modules:totp-2fa-key-api")

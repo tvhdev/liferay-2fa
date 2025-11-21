@@ -5,7 +5,7 @@ Liferay-Require-SchemaVersion: 1.0.0
 Liferay-Service: true
 Bundle-ClassPath:\
   .,\
-  lib/commons-codec-1.13.jar
+  lib/commons-codec-1.15.jar
 -includeresource:\
-  lib/commons-codec-1.13.jar=commons-codec-1.13.jar
+  lib/commons-codec-1.15.jar=commons-codec-1.15.jar
 -dsannotations-options: inherit

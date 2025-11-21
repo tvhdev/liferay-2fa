@@ -1,15 +1,6 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
- *
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
+ * SPDX-FileCopyrightText: (c) 2025 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
 package com.mw.totp_2fa.key.model.impl;
@@ -27,18 +18,20 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import com.mw.totp_2fa.key.model.SecretKey;
 import com.mw.totp_2fa.key.model.SecretKeyModel;
 
 import java.io.Serializable;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 
+import java.sql.Blob;
 import java.sql.Types;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -215,76 +208,64 @@ public class SecretKeyModelImpl
 	public Map<String, Function<SecretKey, Object>>
 		getAttributeGetterFunctions() {
 
-		return _attributeGetterFunctions;
+		return AttributeGetterFunctionsHolder._attributeGetterFunctions;
 	}
 
 	public Map<String, BiConsumer<SecretKey, Object>>
 		getAttributeSetterBiConsumers() {
 
-		return _attributeSetterBiConsumers;
+		return AttributeSetterBiConsumersHolder._attributeSetterBiConsumers;
 	}
 
-	private static Function<InvocationHandler, SecretKey>
-		_getProxyProviderFunction() {
+	private static class AttributeGetterFunctionsHolder {
 
-		Class<?> proxyClass = ProxyUtil.getProxyClass(
-			SecretKey.class.getClassLoader(), SecretKey.class,
-			ModelWrapper.class);
+		private static final Map<String, Function<SecretKey, Object>>
+			_attributeGetterFunctions;
 
-		try {
-			Constructor<SecretKey> constructor =
-				(Constructor<SecretKey>)proxyClass.getConstructor(
-					InvocationHandler.class);
+		static {
+			Map<String, Function<SecretKey, Object>> attributeGetterFunctions =
+				new LinkedHashMap<String, Function<SecretKey, Object>>();
 
-			return invocationHandler -> {
-				try {
-					return constructor.newInstance(invocationHandler);
-				}
-				catch (ReflectiveOperationException
-							reflectiveOperationException) {
+			attributeGetterFunctions.put("uuid", SecretKey::getUuid);
+			attributeGetterFunctions.put(
+				"secretKeyId", SecretKey::getSecretKeyId);
+			attributeGetterFunctions.put("companyId", SecretKey::getCompanyId);
+			attributeGetterFunctions.put("userId", SecretKey::getUserId);
+			attributeGetterFunctions.put("secretKey", SecretKey::getSecretKey);
 
-					throw new InternalError(reflectiveOperationException);
-				}
-			};
+			_attributeGetterFunctions = Collections.unmodifiableMap(
+				attributeGetterFunctions);
 		}
-		catch (NoSuchMethodException noSuchMethodException) {
-			throw new InternalError(noSuchMethodException);
-		}
+
 	}
 
-	private static final Map<String, Function<SecretKey, Object>>
-		_attributeGetterFunctions;
-	private static final Map<String, BiConsumer<SecretKey, Object>>
-		_attributeSetterBiConsumers;
+	private static class AttributeSetterBiConsumersHolder {
 
-	static {
-		Map<String, Function<SecretKey, Object>> attributeGetterFunctions =
-			new LinkedHashMap<String, Function<SecretKey, Object>>();
-		Map<String, BiConsumer<SecretKey, ?>> attributeSetterBiConsumers =
-			new LinkedHashMap<String, BiConsumer<SecretKey, ?>>();
+		private static final Map<String, BiConsumer<SecretKey, Object>>
+			_attributeSetterBiConsumers;
 
-		attributeGetterFunctions.put("uuid", SecretKey::getUuid);
-		attributeSetterBiConsumers.put(
-			"uuid", (BiConsumer<SecretKey, String>)SecretKey::setUuid);
-		attributeGetterFunctions.put("secretKeyId", SecretKey::getSecretKeyId);
-		attributeSetterBiConsumers.put(
-			"secretKeyId",
-			(BiConsumer<SecretKey, Long>)SecretKey::setSecretKeyId);
-		attributeGetterFunctions.put("companyId", SecretKey::getCompanyId);
-		attributeSetterBiConsumers.put(
-			"companyId", (BiConsumer<SecretKey, Long>)SecretKey::setCompanyId);
-		attributeGetterFunctions.put("userId", SecretKey::getUserId);
-		attributeSetterBiConsumers.put(
-			"userId", (BiConsumer<SecretKey, Long>)SecretKey::setUserId);
-		attributeGetterFunctions.put("secretKey", SecretKey::getSecretKey);
-		attributeSetterBiConsumers.put(
-			"secretKey",
-			(BiConsumer<SecretKey, String>)SecretKey::setSecretKey);
+		static {
+			Map<String, BiConsumer<SecretKey, ?>> attributeSetterBiConsumers =
+				new LinkedHashMap<String, BiConsumer<SecretKey, ?>>();
 
-		_attributeGetterFunctions = Collections.unmodifiableMap(
-			attributeGetterFunctions);
-		_attributeSetterBiConsumers = Collections.unmodifiableMap(
-			(Map)attributeSetterBiConsumers);
+			attributeSetterBiConsumers.put(
+				"uuid", (BiConsumer<SecretKey, String>)SecretKey::setUuid);
+			attributeSetterBiConsumers.put(
+				"secretKeyId",
+				(BiConsumer<SecretKey, Long>)SecretKey::setSecretKeyId);
+			attributeSetterBiConsumers.put(
+				"companyId",
+				(BiConsumer<SecretKey, Long>)SecretKey::setCompanyId);
+			attributeSetterBiConsumers.put(
+				"userId", (BiConsumer<SecretKey, Long>)SecretKey::setUserId);
+			attributeSetterBiConsumers.put(
+				"secretKey",
+				(BiConsumer<SecretKey, String>)SecretKey::setSecretKey);
+
+			_attributeSetterBiConsumers = Collections.unmodifiableMap(
+				(Map)attributeSetterBiConsumers);
+		}
+
 	}
 
 	@Override
@@ -479,6 +460,22 @@ public class SecretKeyModelImpl
 	}
 
 	@Override
+	public SecretKey cloneWithOriginalValues() {
+		SecretKeyImpl secretKeyImpl = new SecretKeyImpl();
+
+		secretKeyImpl.setUuid(this.<String>getColumnOriginalValue("uuid_"));
+		secretKeyImpl.setSecretKeyId(
+			this.<Long>getColumnOriginalValue("secretKeyId"));
+		secretKeyImpl.setCompanyId(
+			this.<Long>getColumnOriginalValue("companyId"));
+		secretKeyImpl.setUserId(this.<Long>getColumnOriginalValue("userId"));
+		secretKeyImpl.setSecretKey(
+			this.<String>getColumnOriginalValue("secretKey"));
+
+		return secretKeyImpl;
+	}
+
+	@Override
 	public int compareTo(SecretKey secretKey) {
 		long primaryKey = secretKey.getPrimaryKey();
 
@@ -580,7 +577,7 @@ public class SecretKeyModelImpl
 			getAttributeGetterFunctions();
 
 		StringBundler sb = new StringBundler(
-			(4 * attributeGetterFunctions.size()) + 2);
+			(5 * attributeGetterFunctions.size()) + 2);
 
 		sb.append("{");
 
@@ -591,9 +588,26 @@ public class SecretKeyModelImpl
 			Function<SecretKey, Object> attributeGetterFunction =
 				entry.getValue();
 
+			sb.append("\"");
 			sb.append(attributeName);
-			sb.append("=");
-			sb.append(attributeGetterFunction.apply((SecretKey)this));
+			sb.append("\": ");
+
+			Object value = attributeGetterFunction.apply((SecretKey)this);
+
+			if (value == null) {
+				sb.append("null");
+			}
+			else if (value instanceof Blob || value instanceof Date ||
+					 value instanceof Map || value instanceof String) {
+
+				sb.append(
+					"\"" + StringUtil.replace(value.toString(), "\"", "'") +
+						"\"");
+			}
+			else {
+				sb.append(value);
+			}
+
 			sb.append(", ");
 		}
 
@@ -606,41 +620,12 @@ public class SecretKeyModelImpl
 		return sb.toString();
 	}
 
-	@Override
-	public String toXmlString() {
-		Map<String, Function<SecretKey, Object>> attributeGetterFunctions =
-			getAttributeGetterFunctions();
-
-		StringBundler sb = new StringBundler(
-			(5 * attributeGetterFunctions.size()) + 4);
-
-		sb.append("<model><model-name>");
-		sb.append(getModelClassName());
-		sb.append("</model-name>");
-
-		for (Map.Entry<String, Function<SecretKey, Object>> entry :
-				attributeGetterFunctions.entrySet()) {
-
-			String attributeName = entry.getKey();
-			Function<SecretKey, Object> attributeGetterFunction =
-				entry.getValue();
-
-			sb.append("<column><column-name>");
-			sb.append(attributeName);
-			sb.append("</column-name><column-value><![CDATA[");
-			sb.append(attributeGetterFunction.apply((SecretKey)this));
-			sb.append("]]></column-value></column>");
-		}
-
-		sb.append("</model>");
-
-		return sb.toString();
-	}
-
 	private static class EscapedModelProxyProviderFunctionHolder {
 
 		private static final Function<InvocationHandler, SecretKey>
-			_escapedModelProxyProviderFunction = _getProxyProviderFunction();
+			_escapedModelProxyProviderFunction =
+				ProxyUtil.getProxyProviderFunction(
+					SecretKey.class, ModelWrapper.class);
 
 	}
 
@@ -653,8 +638,9 @@ public class SecretKeyModelImpl
 	public <T> T getColumnValue(String columnName) {
 		columnName = _attributeNames.getOrDefault(columnName, columnName);
 
-		Function<SecretKey, Object> function = _attributeGetterFunctions.get(
-			columnName);
+		Function<SecretKey, Object> function =
+			AttributeGetterFunctionsHolder._attributeGetterFunctions.get(
+				columnName);
 
 		if (function == null) {
 			throw new IllegalArgumentException(

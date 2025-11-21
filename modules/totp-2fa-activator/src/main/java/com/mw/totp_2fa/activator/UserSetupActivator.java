@@ -16,6 +16,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Bundle Activator that iterates through all users and for Active ones that don't have a Secret Key it creates a SecretKey and sends a QR Code URL to the user.
@@ -27,16 +28,24 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
  */
 public class UserSetupActivator implements BundleActivator {
 
+	private ServiceTracker<UserLocalService, UserLocalService> _userServiceTracker;
+    private ServiceTracker<SecretKeyLocalService, SecretKeyLocalService> _secretKeyServiceTracker;
+    private ServiceTracker<QRCodeService, QRCodeService> _qrCodeServiceTracker;
+	
 	@Override
 	public void start(BundleContext bundleContext) throws Exception {
-		ServiceReference userServiceReference = bundleContext.getServiceReference(UserLocalService.class.getName());
-		ServiceReference secretKeyServiceReference = bundleContext.getServiceReference(SecretKeyLocalService.class.getName());
-		ServiceReference qrCodeServiceReference = bundleContext.getServiceReference(QRCodeService.class.getName());
-		
-		userLocalService = (UserLocalService)bundleContext.getService(userServiceReference);
-		secretKeyLocalService = (SecretKeyLocalService)bundleContext.getService(secretKeyServiceReference);
-		qrCodeService = (QRCodeService)bundleContext.getService(qrCodeServiceReference);
-		
+		_userServiceTracker = new ServiceTracker<>(bundleContext, UserLocalService.class, null);
+        _secretKeyServiceTracker = new ServiceTracker<>(bundleContext, SecretKeyLocalService.class, null);
+        _qrCodeServiceTracker = new ServiceTracker<>(bundleContext, QRCodeService.class, null);
+
+        _userServiceTracker.open();
+        _secretKeyServiceTracker.open();
+        _qrCodeServiceTracker.open();
+
+        UserLocalService userLocalService = _userServiceTracker.waitForService(5000);
+        SecretKeyLocalService secretKeyLocalService = _secretKeyServiceTracker.waitForService(5000);
+        QRCodeService qrCodeService = _qrCodeServiceTracker.waitForService(5000);
+        
 		if (_log.isInfoEnabled()) {
 			_log.info("UsersCount: " + userLocalService.getUsersCount());	
 		}
