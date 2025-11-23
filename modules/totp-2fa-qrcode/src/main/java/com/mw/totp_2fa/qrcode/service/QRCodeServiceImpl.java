@@ -32,7 +32,7 @@ import org.osgi.service.component.annotations.Modified;
  * @author Michael Wall
  *
  */
-@Component(configurationPid = TOTP_2FAConfiguration.PID, immediate = true, service = QRCodeService.class)
+@Component(immediate=true, configurationPid = TOTP_2FAConfiguration.PID, service = QRCodeService.class)
 public class QRCodeServiceImpl implements QRCodeService {
 
 	
@@ -205,6 +205,7 @@ public class QRCodeServiceImpl implements QRCodeService {
 	@Activate
 	@Modified
 	protected void activate(Map<String, Object> properties) {
+		_log.info("QRCodeService activated / modified...");
 		tfaConfiguration = ConfigurableUtil.createConfigurable(TOTP_2FAConfiguration.class, properties);
 	}
 

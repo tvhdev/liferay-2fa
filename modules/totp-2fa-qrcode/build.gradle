@@ -3,6 +3,7 @@ dependencies {
 	implementation group: "commons-codec", name: "commons-codec", version: "1.15"
 	implementation "org.jsoup:jsoup:1.14.3"
 	implementation group: 'org.xbib', name: 'jsr-305', version: '1.0.0'
+	compileInclude group: "jakarta.servlet", name: "jakarta.servlet-api", version: "6.0.0"
 		
 	//Mail
 	compileOnly group: "javax.mail", name: "mail", version :"1.4"
@@ -19,6 +20,6 @@ dependencies {
 	implementation group: "com.fasterxml.jackson.core", name: 'jackson-core', version: "2.9.7"
 	implementation group: "com.fasterxml.jackson.core", name: 'jackson-databind', version: "2.9.7"
 	
-    compileOnly project(":modules:totp-2fa-service")
+    compileInclude project(":modules:totp-2fa-service")
     compileOnly project(":modules:totp-2fa-key-api")
 }

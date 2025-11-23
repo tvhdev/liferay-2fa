@@ -8,4 +8,18 @@ Bundle-ClassPath:\
   lib/commons-codec-1.15.jar
 -includeresource:\
   lib/commons-codec-1.15.jar=commons-codec-1.15.jar
--dsannotations-options: inherit
+#-dsannotations-options: inherit
+Export-Package:\
+	com.mw.totp_2fa.key.service.*
+Import-Package: \
+	com.liferay.portal.kernel.service,\
+	com.liferay.portal.kernel.dao.orm,\
+	com.liferay.portal.kernel.log,\
+	com.liferay.portal.kernel.model,\
+	com.liferay.portal.kernel.exception,\
+	com.liferay.portal.kernel.search,\
+	com.liferay.portal.kernel.service.persistence,\
+	com.liferay.portal.kernel.transaction,\
+	com.liferay.portal.kernel.util,\
+	com.liferay.portal.aop,\
+	*

@@ -21,7 +21,6 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
  *
  */
 @Component(
-		immediate = true,
 		service = ModelListener.class
 	)
 public class TOTP_2FAUserModelListener extends BaseModelListener<User> {

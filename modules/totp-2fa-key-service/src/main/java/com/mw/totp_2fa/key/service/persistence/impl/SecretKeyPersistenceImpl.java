@@ -5,6 +5,21 @@
 
 package com.mw.totp_2fa.key.service.persistence.impl;
 
+import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.sql.DataSource;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
@@ -27,7 +42,6 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
-
 import com.mw.totp_2fa.key.exception.NoSuchSecretKeyException;
 import com.mw.totp_2fa.key.model.SecretKey;
 import com.mw.totp_2fa.key.model.SecretKeyTable;
@@ -35,24 +49,6 @@ import com.mw.totp_2fa.key.model.impl.SecretKeyImpl;
 import com.mw.totp_2fa.key.model.impl.SecretKeyModelImpl;
 import com.mw.totp_2fa.key.service.persistence.SecretKeyPersistence;
 import com.mw.totp_2fa.key.service.persistence.SecretKeyUtil;
-import com.mw.totp_2fa.key.service.persistence.impl.constants.totpPersistenceConstants;
-
-import java.io.Serializable;
-
-import java.lang.reflect.InvocationHandler;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.sql.DataSource;
-
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * The persistence implementation for the secret key service.
@@ -1907,6 +1903,8 @@ public class SecretKeyPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
+		_log.info("SecretKeyLocalServiceImpl activated.");
+		
 		_valueObjectFinderCacheListThreshold = GetterUtil.getInteger(
 			PropsUtil.get(PropsKeys.VALUE_OBJECT_FINDER_CACHE_LIST_THRESHOLD));
 
@@ -1975,27 +1973,18 @@ public class SecretKeyPersistenceImpl
 	}
 
 	@Override
-	@Reference(
-		target = totpPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
-		unbind = "-"
-	)
+	@Reference
 	public void setConfiguration(Configuration configuration) {
 	}
 
 	@Override
-	@Reference(
-		target = totpPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
-		unbind = "-"
-	)
+	@Reference
 	public void setDataSource(DataSource dataSource) {
 		super.setDataSource(dataSource);
 	}
 
 	@Override
-	@Reference(
-		target = totpPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
-		unbind = "-"
-	)
+	@Reference
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		super.setSessionFactory(sessionFactory);
 	}

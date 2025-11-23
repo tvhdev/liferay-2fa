@@ -1,5 +1,6 @@
 dependencies {
 	compileOnly group: "com.liferay.portal", name: "release.portal.api"
+	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel"
 		
 	//Apache Commons
 	implementation group: "commons-codec", name: "commons-codec", version: "1.15"

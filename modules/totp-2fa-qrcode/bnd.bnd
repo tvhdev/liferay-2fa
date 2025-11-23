@@ -1,6 +1,7 @@
 Bundle-Name: totp-2fa-qrcode
 Bundle-SymbolicName: com.mw.totp-2fa.qrcode
 Bundle-Version: 1.0.0
+Web-ContextPath: /qrcode
 Bundle-ClassPath:\
   .,\
   lib/javase-3.3.0.jar,\
@@ -29,3 +30,10 @@ Bundle-ClassPath:\
 Export-Package: \
 	com.mw.totp_2fa.qrcode.constants,\
 	com.mw.totp_2fa.qrcode.service
+Import-Package: \
+	com.mw.totp_2fa.key.service.*,\
+	com.liferay.portal.kernel.log,\
+	com.liferay.portal.kernel.model,\
+	com.liferay.portal.kernel.language,\
+	com.liferay.portal.configuration.metatype.bnd.util,\
+	*
