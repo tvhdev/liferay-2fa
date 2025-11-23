@@ -5,7 +5,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.portlet.PortletRequest;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -13,9 +12,9 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 
 import com.liferay.frontend.taglib.servlet.taglib.ScreenNavigationEntry;
-import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -204,18 +203,12 @@ implements ScreenNavigationEntry<User> {
 
 	private volatile TOTP_2FAConfiguration tfaConfiguration;	
 	
-	@Reference
+	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
 	private SecretKeyLocalService secretKeyLocalService;
 	
-	@Reference
+	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
 	private UserLocalService userLocalService;
 	
-	@Reference
+	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
 	private QRCodeService qrCodeService;	
-	
-	@Reference
-	private JSPRenderer _jspRenderer;
-
-	@Reference(target = "(osgi.web.symbolicname=com.mw.totp-2fa.qrcode)")
-	private ServletContext _servletContext;
 }

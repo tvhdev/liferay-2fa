@@ -66,7 +66,7 @@ public class MyAccountPortletFilter extends AbstractProfilePortletFilter {
 		String text = renderResponseWrapper.toString();
 
 		// We are appending the Secret Key and QR Code to the password section only, before the fieldset tag is closed.
-		if (userId <= -1 || !mvcRenderCommandName.equalsIgnoreCase("/users_admin/edit_user") || !screenNavigationCategoryKey.equalsIgnoreCase("general") || !screenNavigationEntryKey.equalsIgnoreCase("password")) {
+		if (userId <= -1 || !mvcRenderCommandName.equalsIgnoreCase("/users_admin/edit_user") || !screenNavigationCategoryKey.equalsIgnoreCase("general") || !screenNavigationEntryKey.equalsIgnoreCase("password") || tfaConfiguration.loginTotp2faEnabled() == false) {
 			response.getWriter().write(text);
 			
 			return;

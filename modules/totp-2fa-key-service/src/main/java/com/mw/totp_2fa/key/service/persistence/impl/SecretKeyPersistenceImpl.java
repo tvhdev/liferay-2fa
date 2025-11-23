@@ -49,6 +49,7 @@ import com.mw.totp_2fa.key.model.impl.SecretKeyImpl;
 import com.mw.totp_2fa.key.model.impl.SecretKeyModelImpl;
 import com.mw.totp_2fa.key.service.persistence.SecretKeyPersistence;
 import com.mw.totp_2fa.key.service.persistence.SecretKeyUtil;
+import com.mw.totp_2fa.key.service.persistence.impl.constants.totpPersistenceConstants;
 
 /**
  * The persistence implementation for the secret key service.
@@ -1973,18 +1974,27 @@ public class SecretKeyPersistenceImpl
 	}
 
 	@Override
-	@Reference
+	@Reference(
+		target = totpPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
+		unbind = "-"
+	)
 	public void setConfiguration(Configuration configuration) {
 	}
 
 	@Override
-	@Reference
+	@Reference(
+		target = totpPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
 	public void setDataSource(DataSource dataSource) {
 		super.setDataSource(dataSource);
 	}
 
 	@Override
-	@Reference
+	@Reference(
+		target = totpPersistenceConstants.ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER,
+		unbind = "-"
+	)
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		super.setSessionFactory(sessionFactory);
 	}

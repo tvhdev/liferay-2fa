@@ -30,7 +30,6 @@ import com.mw.totp_2fa.qrcode.service.QRCodeService;
 public class UserSetupActivator {
 
 	@Activate
-	@Modified
 	protected void activate(Map<String, Object> properties) {
 		_log.info("UsersCount: " + userLocalService.getUsersCount());	
 		

@@ -1,3 +1,7 @@
 Bundle-Name: totp-2fa-login-auth
 Bundle-SymbolicName: com.mw.totp-2fa.login.auth
 Bundle-Version: 1.0.0
+Import-Package: \
+    com.mw.totp_2fa.api, \
+    com.liferay.portal.kernel.security.auth, \
+    *
