@@ -1,6 +1,6 @@
 # Introduction
 
-This OSGi project ports Michael Wall's 2 Factor Authentication (2FA) Plugin to Liferay CE 7.4.2 CE GA3 (see Liferay Blog post [Adding 2FA to Liferay DXP 7.1](https://community.liferay.com/blogs/-/blogs/adding-2fa-to-liferay-dxp-7-1) for screenshots).
+This OSGi project ports Michael Wall's 2 Factor Authentication (2FA) Plugin to Liferay CE 7.4.3 GA132 (see Liferay Blog post [Adding 2FA to Liferay DXP 7.1](https://community.liferay.com/blogs/-/blogs/adding-2fa-to-liferay-dxp-7-1) for screenshots).
 
 The Google Authenticator app (available for iPhone and Android) or other 2FA apps can be used by the user during login to generate a one-time passcode, with QR Code support included to populate the 2FA app user profile.
 
@@ -22,10 +22,12 @@ The following steps cover building, deploying, configuring and testing:
 3. Copy the following newly built totp-2fa OSGi bundles to the Liferay deploy folder and confirm they deploy successfully with the Gogo shell:
 * com.mw.totp-2fa.login.auth
 * com.mw.totp-2fa.service
-* com.mw.totp_2fa.key.api
+* com.mw.totp-2fa.key.api
 * com.mw.totp_2fa.key.service
 * com.mw.totp-2fa.qrcode
 * com.mw.totp-2fa.user.model.listener
+* com.mw.totp-2fa.activator
+* com.mw.totp_2fa.password.jsp.fragment
 4. Login to Liferay as an Administrator
 5. Go to Control Panel > Configuration > System Settings > Security > TOTP 2FA
 6. Enable the 'Login TOTP 2FA Enabled' checkbox
@@ -45,7 +47,7 @@ The following steps cover building, deploying, configuring and testing:
 
 # Notes
 
-1. Supported Liferay versions: **CE 7.4.2 CE GA3+**
+1. Supported Liferay versions: **CE 7.4.3 GA132+**
 2. 2FA on Login must be explicitly configured and enabled after initial deployment, see 'Deployment & Setup Steps' to enable
 3. Ensure that the phone and server time are roughly the same, if not then the generated codes may not match when the comparison is done, as the code is only valid for 30 / 60 seconds. See System Settings > TOTP 2FA > Advanced > Allow for Time Skew below to make the verification more lenient
 4. If the Google Authenticator code is red it means it is about to expire. If Allow for Time Skew is off then wait until a new one is generated before trying as a time difference of a few seconds between the phone and server means it may not work
@@ -68,13 +70,17 @@ com.mw.totp-2fa.service
 - Contains the TOTP Generator Interface and Implementation component
 - Contains the en_US Resource Bundle component and corresponding resource bundle
 
-com.mw.totp_2fa.key.api / com.mw.totp_2fa.key.service
+com.mw.totp-2fa.key.api / com.mw.totp_2fa.key.service
 - Contains the Service Builder api and service for the Secret Key entity
 
 com.mw.totp-2fa.qrcode
-- Contains a Servlet component used to generate / render QR Codes
-- Contains Portlet Filter components to include the QR Codes & Secret Keys and Generate / Regenerate actions on the User Profile screens (Password tab)
+- Contains Servlet components used to generate / render QR Codes and resend QR Code emails
+- Contains a DynamicInclude component (TOTP2FAPasswordDynamicInclude) that renders the QR Code / Secret Key section content (generate/regenerate links, login-required status, secret key, QR image) into the Users Admin / My Account Password screen
+- Contains MVC Action Command components for the Generate / Regenerate Secret Key and Resend QR Code Email actions
 - Contains QR Code service component used to send emails with the QR Code URLs
+
+com.mw.totp_2fa.password.jsp.fragment
+- An OSGi fragment bundle (Fragment-Host: com.liferay.users.admin.web) that overrides password.jsp to add a "2FA-Authentication/QR-Code" sheet section, rendered via a `<liferay-util:dynamic-include>` tag consumed by the DynamicInclude component in com.mw.totp-2fa.qrcode
 
 com.mw.totp-2fa.user.model.listener
 - Contains a User Model Listener component with afterCreate method to add a Secret Key when a new user is created and email a QR Code URL link to the user
