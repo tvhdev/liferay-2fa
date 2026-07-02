@@ -14,4 +14,9 @@ Export-Package: \
 	com.mw.totp_2fa.config,\
 	com.mw.totp_2fa.api,\
 	com.mw.totp_2fa.util
--metatype:*	
+Import-Package: \
+	!com.mw.totp_2fa.api,\
+	!com.mw.totp_2fa.config,\
+	!com.mw.totp_2fa.util,\
+	*
+-metatype:*
