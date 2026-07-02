@@ -44,12 +44,17 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
  * @author Michael Wall
  *
  */
+// Plain OSGi HTTP Whiteboard servlet in the DEFAULT servlet context (no
+// context.path / context.select property). Liferay exposes the default
+// whiteboard context under the /o/ endpoint, so a servlet with
+// pattern=/qrcode is reachable at /o/qrcode directly. Do NOT set a
+// Web-ContextPath in bnd.bnd (see the note there): that creates a WAB context
+// that reserves /o/qrcode and intercepts the request before this servlet.
 @Component(
 immediate = true,
-property = { 
-"osgi.http.whiteboard.context.path=/",
+property = {
 "osgi.http.whiteboard.servlet.name=com.mw.totp_2fa.qrcode.servlet.QRCodeServlet",
-"osgi.http.whiteboard.servlet.pattern=/qrcode", 
+"osgi.http.whiteboard.servlet.pattern=/qrcode",
 },
 configurationPid = TOTP_2FAConfiguration.PID,
 service = Servlet.class)
@@ -59,7 +64,7 @@ public class QRCodeServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/html"); // Will be overwritten if applicable.
-		
+
 		ServletOutputStream outStream = null;
 
 		try {
@@ -174,7 +179,16 @@ public class QRCodeServlet extends HttpServlet {
 	@Reference(cardinality=ReferenceCardinality.MANDATORY)
 	private UserLocalService userLocalService;
 	
-	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
+	// Excludes the raw, unproxied AopService-tagged bean: Liferay's AOP
+	// extender registers a SEPARATE, transactionally-wrapped proxy service
+	// (without AopService in its objectClass) alongside the raw one, and
+	// consumers that race-bind to the raw one at startup get
+	// "IllegalStateException: No current transaction executor" on writes.
+	@Reference(
+		cardinality = ReferenceCardinality.MANDATORY,
+		target = "(!(objectClass=com.liferay.portal.aop.AopService))",
+		unbind = "-"
+	)
 	private SecretKeyLocalService secretKeyLocalService;
 	
 	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")

@@ -19,6 +19,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.configuration.Configuration;
@@ -1973,8 +1974,15 @@ public class SecretKeyPersistenceImpl
 		entityCache.removeCache(SecretKeyImpl.class.getName());
 	}
 
+	// Made optional: this Configuration service (matched by the
+	// "name=portlet" origin-bundle filter Liferay's Spring Extender uses for
+	// its own core modules) is never provisioned for third-party OSGi
+	// modules on this Liferay release, and the setter discards the value
+	// anyway, so a mandatory reference here only serves to permanently block
+	// this component (and everything depending on it) from activating.
 	@Override
 	@Reference(
+		cardinality = ReferenceCardinality.OPTIONAL,
 		target = totpPersistenceConstants.SERVICE_CONFIGURATION_FILTER,
 		unbind = "-"
 	)

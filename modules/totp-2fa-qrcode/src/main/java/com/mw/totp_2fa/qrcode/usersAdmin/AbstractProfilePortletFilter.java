@@ -19,17 +19,25 @@ import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 import javax.portlet.filter.FilterChain;
 import javax.portlet.filter.FilterConfig;
 import javax.portlet.filter.RenderFilter;
+import javax.portlet.filter.ResourceFilter;
 
 /**
  * Abstract class to remove duplication for QR Code content on Password section.
- * 
+ *
+ * <p>Implements both {@link RenderFilter} and {@link ResourceFilter}: newer
+ * Liferay versions load the Edit User "Screen Navigation" tabs (including
+ * Password) via an AJAX resource request rather than a full portlet render,
+ * so a render-only filter never sees that request.</p>
+ *
  * @author Michael Wall
  *
  */
-public abstract class AbstractProfilePortletFilter implements RenderFilter{
+public abstract class AbstractProfilePortletFilter implements RenderFilter, ResourceFilter {
 
 	@Override
 	public void init(FilterConfig filterConfig) throws PortletException {
@@ -44,8 +52,12 @@ public abstract class AbstractProfilePortletFilter implements RenderFilter{
 	@Override
 	public abstract void doFilter(RenderRequest request, RenderResponse response, FilterChain chain)
 			throws IOException, PortletException;
-	
-	public String getContent(boolean isUserAdminScreen, boolean showSecretKeysOnAccountScreens, QRCodeService qrCodeService, boolean hasSecretKey, String portletId, RenderRequest request, User user, SecretKey secretKeyObject) {
+
+	@Override
+	public abstract void doFilter(ResourceRequest request, ResourceResponse response, FilterChain chain)
+			throws IOException, PortletException;
+
+	public String getContent(boolean isUserAdminScreen, boolean showSecretKeysOnAccountScreens, QRCodeService qrCodeService, boolean hasSecretKey, String portletId, PortletRequest request, User user, SecretKey secretKeyObject) {
 		StringBuilder customText = new StringBuilder();
 
 		String generateSecretKeyLabel = null;

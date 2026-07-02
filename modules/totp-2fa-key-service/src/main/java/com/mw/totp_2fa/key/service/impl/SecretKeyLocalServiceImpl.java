@@ -20,6 +20,7 @@ import org.apache.commons.codec.binary.Base32;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
@@ -42,7 +43,13 @@ import com.mw.totp_2fa.key.service.base.SecretKeyLocalServiceBaseImpl;
  * @see SecretKeyLocalServiceBaseImpl
  * @see com.mw.totp_2fa.key.service.SecretKeyLocalServiceUtil
  */
-@Component(service = SecretKeyLocalService.class)
+// SecretKeyLocalServiceBaseImpl already implements AopService (needed for
+// Liferay's transactional proxy to wrap this bean so persistence calls run
+// inside a transaction), but @Component's explicit service= array overrides
+// DS's auto-detection of implemented interfaces, so AopService must be
+// listed here too or the raw, unproxied bean gets registered/injected
+// instead, causing "No current transaction executor" from BasePersistenceImpl.
+@Component(service = {AopService.class, SecretKeyLocalService.class})
 public class SecretKeyLocalServiceImpl extends SecretKeyLocalServiceBaseImpl {
 	/*
 	 * NOTE FOR DEVELOPERS:

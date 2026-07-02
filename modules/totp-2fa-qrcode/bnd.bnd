@@ -1,7 +1,11 @@
 Bundle-Name: totp-2fa-qrcode
 Bundle-SymbolicName: com.mw.totp-2fa.qrcode
 Bundle-Version: 1.0.0
-Web-ContextPath: /qrcode
+# NOTE: no "Web-ContextPath" here on purpose. It creates a WAB
+# ServletContextHelper that reserves /o/qrcode and swallows the request
+# (404 without a WEB-INF/ jar entry, empty 200 with one) before our servlet
+# is ever reached. The QR servlets are plain OSGi HTTP Whiteboard servlets in
+# the DEFAULT context instead, reachable at /o/<servlet-pattern>.
 Bundle-ClassPath:\
   .,\
   lib/javase-3.3.0.jar,\
@@ -26,7 +30,7 @@ Bundle-ClassPath:\
   lib/jackson-core-2.9.7.jar=jackson-core-2.9.7.jar,\
   lib/jsr-305-1.0.0.jar=jsr-305-1.0.0.jar,\
   lib/jsoup-1.14.3.jar=jsoup-1.14.3.jar,\
-  lib/jackson-databind-2.9.7.jar=jackson-databind-2.9.7.jar  
+  lib/jackson-databind-2.9.7.jar=jackson-databind-2.9.7.jar
 Export-Package: \
 	com.mw.totp_2fa.qrcode.constants,\
 	com.mw.totp_2fa.qrcode.service

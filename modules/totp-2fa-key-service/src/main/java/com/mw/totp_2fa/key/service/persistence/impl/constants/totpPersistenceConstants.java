@@ -17,7 +17,13 @@ public class totpPersistenceConstants {
 	public static final String ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER =
 		"(origin.bundle.symbolic.name=" + BUNDLE_SYMBOLIC_NAME + ")";
 
+	// The Service Builder Gradle plugin version this project was generated
+	// with emits "(name=service)" here, but on this Liferay release the Spring
+	// Extender only ever registers per-module Configuration services with
+	// name=portlet (verified: every one of Liferay's own ~90 Service Builder
+	// modules registers "name=portlet"; none register "name=service"). Left
+	// as "service" this reference is permanently UNSATISFIED.
 	public static final String SERVICE_CONFIGURATION_FILTER =
-		"(&" + ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER + "(name=service))";
+		"(&" + ORIGIN_BUNDLE_SYMBOLIC_NAME_FILTER + "(name=portlet))";
 
 }

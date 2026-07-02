@@ -62,7 +62,16 @@ public class UserSetupActivator {
 	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
 	private UserLocalService userLocalService;
 	
-	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
+	// Excludes the raw, unproxied AopService-tagged bean: Liferay's AOP
+	// extender registers a SEPARATE, transactionally-wrapped proxy service
+	// (without AopService in its objectClass) alongside the raw one, and
+	// consumers that race-bind to the raw one at startup get
+	// "IllegalStateException: No current transaction executor" on writes.
+	@Reference(
+		cardinality = ReferenceCardinality.MANDATORY,
+		target = "(!(objectClass=com.liferay.portal.aop.AopService))",
+		unbind = "-"
+	)
 	private SecretKeyLocalService secretKeyLocalService;
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")

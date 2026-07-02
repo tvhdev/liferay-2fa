@@ -1,5 +1,13 @@
 Bundle-Name: totp-2fa-key-service
-Bundle-SymbolicName: com.mw.totp-2fa.key.service
+# Must equal totpPersistenceConstants.BUNDLE_SYMBOLIC_NAME (generated from
+# service.xml's package-path="com.mw.totp_2fa.key", an underscore since
+# hyphens are illegal in Java package names). Liferay's per-module DataSource/
+# SessionFactory/Configuration provisioning matches services by this exact
+# string via an "origin.bundle.symbolic.name=..." target filter baked into the
+# generated persistence/base-service classes, so any mismatch here leaves
+# secretKeyPersistence (and the persistence impl's own Configuration/
+# DataSource/SessionFactory references) permanently UNSATISFIED.
+Bundle-SymbolicName: com.mw.totp_2fa.key.service
 Bundle-Version: 1.0.0
 Liferay-Require-SchemaVersion: 1.0.0
 Liferay-Service: true
@@ -8,8 +16,10 @@ Bundle-ClassPath:\
   lib/commons-codec-1.15.jar
 -includeresource:\
   lib/commons-codec-1.15.jar=commons-codec-1.15.jar
-#-dsannotations-options: inherit
+-dsannotations-options: inherit
 Export-Package:\
+	!com.mw.totp_2fa.key.service,\
+	!com.mw.totp_2fa.key.service.persistence,\
 	com.mw.totp_2fa.key.service.*
 Import-Package: \
 	com.liferay.portal.kernel.service,\

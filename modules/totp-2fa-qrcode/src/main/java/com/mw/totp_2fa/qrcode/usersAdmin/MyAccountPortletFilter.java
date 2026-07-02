@@ -20,9 +20,12 @@ import java.util.Map;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 import javax.portlet.filter.FilterChain;
 import javax.portlet.filter.PortletFilter;
 import javax.portlet.filter.RenderResponseWrapper;
+import javax.portlet.filter.ResourceResponseWrapper;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -95,7 +98,57 @@ public class MyAccountPortletFilter extends AbstractProfilePortletFilter {
 		
 		response.getWriter().write(doc.html());
 	}
-	
+
+	// Liferay's Edit User "Screen Navigation" tabs (including Password) load
+	// via an AJAX resource request rather than a full portlet render, so the
+	// same injection has to run here too; RenderFilter alone never sees that
+	// request. Mirrors doFilter(RenderRequest, ...) above.
+	@Override
+	public void doFilter(ResourceRequest request, ResourceResponse response, FilterChain chain)
+			throws IOException, PortletException {
+
+		ResourceResponseWrapper resourceResponseWrapper = new BufferedResourceResponseWrapper(response);
+
+		chain.doFilter(request, resourceResponseWrapper);
+
+		long userId = PortalUtil.getUserId(request);
+		String mvcRenderCommandName = ParamUtil.getString(request, "mvcRenderCommandName", "");
+		String screenNavigationCategoryKey = ParamUtil.getString(request, "screenNavigationCategoryKey", "");
+		String screenNavigationEntryKey = ParamUtil.getString(request, "screenNavigationEntryKey", "");
+
+		String text = resourceResponseWrapper.toString();
+
+		// We are appending the Secret Key and QR Code to the password section only, before the fieldset tag is closed.
+		if (userId <= -1 || !mvcRenderCommandName.equalsIgnoreCase("/users_admin/edit_user") || !screenNavigationCategoryKey.equalsIgnoreCase("general") || !screenNavigationEntryKey.equalsIgnoreCase("password") || tfaConfiguration.loginTotp2faEnabled() == false) {
+			response.getWriter().write(text);
+
+			return;
+		}
+
+		User user = userLocalService.fetchUser(userId);
+
+		//Don't do anything if user not found or user is not active.
+		if (user == null || !user.isActive()) {
+			response.getWriter().write(text);
+
+			return;
+		}
+
+		SecretKey secretKeyObject = secretKeyLocalService.fetchSecretKeyByUserId(user.getCompanyId(), user.getUserId());
+
+		boolean hasSecretKey = false;
+
+		if (secretKeyObject != null && !Validator.isNull(secretKeyObject.getSecretKey())) {
+			hasSecretKey = true;
+		}
+
+		Document doc = Jsoup.parse(text);
+		Element form = doc.select("form").first();
+		form.append(getContent(true, tfaConfiguration.showSecretKeysOnAccountScreens(), qrCodeService, hasSecretKey, UsersAdminPortletKeys.USERS_ADMIN, request, user, secretKeyObject));
+
+		response.getWriter().write(doc.html());
+	}
+
 	@Activate
 	@Modified
 	protected void activate(Map<String, Object> properties) {
@@ -109,7 +162,16 @@ public class MyAccountPortletFilter extends AbstractProfilePortletFilter {
 	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
 	protected UserLocalService userLocalService;
 	
-	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
+	// Excludes the raw, unproxied AopService-tagged bean: Liferay's AOP
+	// extender registers a SEPARATE, transactionally-wrapped proxy service
+	// (without AopService in its objectClass) alongside the raw one, and
+	// consumers that race-bind to the raw one at startup get
+	// "IllegalStateException: No current transaction executor" on writes.
+	@Reference(
+		cardinality = ReferenceCardinality.MANDATORY,
+		target = "(!(objectClass=com.liferay.portal.aop.AopService))",
+		unbind = "-"
+	)
 	protected SecretKeyLocalService secretKeyLocalService;
 	
 	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
