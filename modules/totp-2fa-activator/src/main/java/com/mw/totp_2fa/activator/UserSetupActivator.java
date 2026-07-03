@@ -1,5 +1,14 @@
 package com.mw.totp_2fa.activator;
 
+import java.util.List;
+import java.util.Map;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -9,14 +18,6 @@ import com.mw.totp_2fa.key.model.SecretKey;
 import com.mw.totp_2fa.key.service.SecretKeyLocalService;
 import com.mw.totp_2fa.qrcode.service.QRCodeService;
 
-import java.util.List;
-
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-
 /**
  * Bundle Activator that iterates through all users and for Active ones that don't have a Secret Key it creates a SecretKey and sends a QR Code URL to the user.
  * 
@@ -25,21 +26,12 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
  * @author Michael Wall
  *
  */
-public class UserSetupActivator implements BundleActivator {
+@Component(service = UserSetupActivator.class)
+public class UserSetupActivator {
 
-	@Override
-	public void start(BundleContext bundleContext) throws Exception {
-		ServiceReference userServiceReference = bundleContext.getServiceReference(UserLocalService.class.getName());
-		ServiceReference secretKeyServiceReference = bundleContext.getServiceReference(SecretKeyLocalService.class.getName());
-		ServiceReference qrCodeServiceReference = bundleContext.getServiceReference(QRCodeService.class.getName());
-		
-		userLocalService = (UserLocalService)bundleContext.getService(userServiceReference);
-		secretKeyLocalService = (SecretKeyLocalService)bundleContext.getService(secretKeyServiceReference);
-		qrCodeService = (QRCodeService)bundleContext.getService(qrCodeServiceReference);
-		
-		if (_log.isInfoEnabled()) {
-			_log.info("UsersCount: " + userLocalService.getUsersCount());	
-		}
+	@Activate
+	protected void activate(Map<String, Object> properties) {
+		_log.info("UsersCount: " + userLocalService.getUsersCount());	
 		
 		// Ideally we would use userLocalService.getUsers(companyId, defaultUser, status, start, end, obc) but we don't have companyId
 		List<User> users = userLocalService.getUsers(QueryUtil.ALL_POS, QueryUtil.ALL_POS);
@@ -67,14 +59,19 @@ public class UserSetupActivator implements BundleActivator {
 		}
 	}
 
-	@Override
-	public void stop(BundleContext bundleContext) throws Exception {
-	}
-	
 	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
 	private UserLocalService userLocalService;
 	
-	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
+	// Excludes the raw, unproxied AopService-tagged bean: Liferay's AOP
+	// extender registers a SEPARATE, transactionally-wrapped proxy service
+	// (without AopService in its objectClass) alongside the raw one, and
+	// consumers that race-bind to the raw one at startup get
+	// "IllegalStateException: No current transaction executor" on writes.
+	@Reference(
+		cardinality = ReferenceCardinality.MANDATORY,
+		target = "(!(objectClass=com.liferay.portal.aop.AopService))",
+		unbind = "-"
+	)
 	private SecretKeyLocalService secretKeyLocalService;
 
 	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")

@@ -1,4 +1,14 @@
 Bundle-Name: totp-2fa-activator
 Bundle-SymbolicName: com.mw.totp-2fa.activator
 Bundle-Version: 1.0.0
-Bundle-Activator: com.mw.totp_2fa.activator.UserSetupActivator
+#Bundle-Activator: com.mw.totp_2fa.activator.UserSetupActivator
+Import-Package: \
+	org.osgi.framework,\
+	com.mw.totp_2fa.key.service.*,\
+	com.mw.totp_2fa.qrcode.service,\
+	com.liferay.portal.kernel.service,\
+	com.liferay.portal.kernel.log,\
+	com.liferay.portal.kernel.model,\
+	com.liferay.portal.kernel.language,\
+	com.liferay.portal.configuration.metatype.bnd.util,\
+	*

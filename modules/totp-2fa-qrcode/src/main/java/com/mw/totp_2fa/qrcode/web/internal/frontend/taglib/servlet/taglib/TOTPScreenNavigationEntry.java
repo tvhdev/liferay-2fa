@@ -1,51 +1,78 @@
-package com.mw.totp_2fa.qrcode.usersAdmin;
+package com.mw.totp_2fa.qrcode.web.internal.frontend.taglib.servlet.taglib;
 
+import java.io.IOException;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.portlet.PortletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+
+import com.liferay.frontend.taglib.servlet.taglib.ScreenNavigationEntry;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.users.admin.constants.UsersAdminPortletKeys;
+import com.mw.totp_2fa.config.TOTP_2FAConfiguration;
 import com.mw.totp_2fa.key.model.SecretKey;
+import com.mw.totp_2fa.key.service.SecretKeyLocalService;
 import com.mw.totp_2fa.qrcode.constants.QRCodeConstants;
 import com.mw.totp_2fa.qrcode.service.QRCodeService;
 import com.mw.totp_2fa.util.TOTP_2FAUtil;
 
-import java.io.IOException;
-
-import javax.portlet.PortletException;
-import javax.portlet.PortletRequest;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-import javax.portlet.filter.FilterChain;
-import javax.portlet.filter.FilterConfig;
-import javax.portlet.filter.RenderFilter;
-
-/**
- * Abstract class to remove duplication for QR Code content on Password section.
- * 
- * @author Michael Wall
- *
- */
-public abstract class AbstractProfilePortletFilter implements RenderFilter{
+@Component(
+		immediate = true,
+	    configurationPid = TOTP_2FAConfiguration.PID,
+		property = {
+			"screen.navigation.entry.order:Integer=60"
+		},
+		service = {TOTPScreenNavigationEntry.class}
+	)
+public class TOTPScreenNavigationEntry
+implements ScreenNavigationEntry<User> {
 
 	@Override
-	public void init(FilterConfig filterConfig) throws PortletException {
-
+	public boolean isVisible(User user, User context) {
+		_log.info("TOTP isVisible called...");
+		return tfaConfiguration.loginTotp2faEnabled() == true;
 	}
 
 	@Override
-	public void destroy() {
-
+	public String getCategoryKey() {
+		return "general";
 	}
 
 	@Override
-	public abstract void doFilter(RenderRequest request, RenderResponse response, FilterChain chain)
-			throws IOException, PortletException;
+	public String getEntryKey() {
+		return "general";
+	}
+
+	@Override
+	public String getLabel(Locale locale) {
+		return "2-Faktor Authentifizierung (TOTP)";
+	}
+
+	@Override
+	public String getScreenNavigationKey() {
+		return "edit.user.form";
+	}
 	
-	public String getContent(boolean isUserAdminScreen, boolean showSecretKeysOnAccountScreens, QRCodeService qrCodeService, boolean hasSecretKey, String portletId, RenderRequest request, User user, SecretKey secretKeyObject) {
+	public String getContent(boolean isUserAdminScreen, boolean showSecretKeysOnAccountScreens, QRCodeService qrCodeService, boolean hasSecretKey, String portletId, HttpServletRequest request, User user, SecretKey secretKeyObject) {
 		StringBuilder customText = new StringBuilder();
 
 		String generateSecretKeyLabel = null;
@@ -142,6 +169,55 @@ public abstract class AbstractProfilePortletFilter implements RenderFilter{
 		
 		return customText.toString();
 	}
+
+	@Override
+	public void render(
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
+		throws IOException {
+
+		long userId = ParamUtil.getLong(httpServletRequest, "p_u_i_d", -1);
+		
+		User user = userLocalService.fetchUser(userId);
+		
+		SecretKey secretKeyObject = secretKeyLocalService.fetchSecretKeyByUserId(user.getCompanyId(), user.getUserId());
+		
+		boolean hasSecretKey = false;
+		
+		if (secretKeyObject != null && !Validator.isNull(secretKeyObject.getSecretKey())) {
+			hasSecretKey = true;
+		}
+		
+		String html = getContent(true, tfaConfiguration.showSecretKeysOnAccountScreens(), qrCodeService, hasSecretKey, UsersAdminPortletKeys.USERS_ADMIN, httpServletRequest, user, secretKeyObject);
+		httpServletResponse.getWriter().write(html);
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_log.info("TOTP Screen Navigation Entry activated / modified...");
+		tfaConfiguration = ConfigurableUtil.createConfigurable(TOTP_2FAConfiguration.class, properties);
+	}
 	
-	private static Log _log = LogFactoryUtil.getLog(AbstractProfilePortletFilter.class);
+	private static Log _log = LogFactoryUtil.getLog(TOTPScreenNavigationEntry.class);	
+
+	private volatile TOTP_2FAConfiguration tfaConfiguration;	
+	
+	// Excludes the raw, unproxied AopService-tagged bean: Liferay's AOP
+	// extender registers a SEPARATE, transactionally-wrapped proxy service
+	// (without AopService in its objectClass) alongside the raw one, and
+	// consumers that race-bind to the raw one at startup get
+	// "IllegalStateException: No current transaction executor" on writes.
+	@Reference(
+		cardinality = ReferenceCardinality.MANDATORY,
+		target = "(!(objectClass=com.liferay.portal.aop.AopService))",
+		unbind = "-"
+	)
+	private SecretKeyLocalService secretKeyLocalService;
+	
+	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
+	private UserLocalService userLocalService;
+	
+	@Reference(cardinality = ReferenceCardinality.MANDATORY, unbind = "-")
+	private QRCodeService qrCodeService;	
 }
