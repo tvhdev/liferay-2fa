@@ -1,6 +1,6 @@
 # Introduction
 
-This OSGi project ports [Michael Wall's 2 Factor Authentication (2FA) Plugin](https://github.com/michael-wall/liferay-2fa/) and Liferay Blog post [Adding 2FA to Liferay DXP 7.1](https://community.liferay.com/blogs/-/blogs/adding-2fa-to-liferay-dxp-7-1) for screenshots).
+This OSGi project ports [Michael Wall's 2 Factor Authentication (2FA) Plugin](https://github.com/michael-wall/liferay-2fa/) and Liferay Blog post [Adding 2FA to Liferay DXP 7.1](https://liferay.dev/b/adding-2fa-to-liferay-dxp-7-1) for screenshots).
 
 The Google Authenticator app (available for iPhone and Android) or other 2FA apps can be used by the user during login to generate a one-time passcode, with QR Code support included to populate the 2FA app user profile.
 
