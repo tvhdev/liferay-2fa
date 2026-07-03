@@ -4,7 +4,7 @@ This OSGi project ports [Michael Wall's 2 Factor Authentication (2FA) Plugin](ht
 
 The Google Authenticator app (available for iPhone and Android) or other 2FA apps can be used by the user during login to generate a one-time passcode, with QR Code support included to populate the 2FA app user profile.
 
-The project adds an 'Authenticator Code' field to the Liferay Login screen with a Portlet Filter component and verifies the Authenticator Code entered by the user using an auth.pipeline.post Authenticator component.
+The project adds an 'Authenticator Code' field to the Liferay Login screen with a JSP fragment + DynamicInclude component and verifies the Authenticator Code entered by the user using an auth.pipeline.post Authenticator component.
 
 It uses the Time-based One-Time Password algorithm (TOTP), which computes a one-time password using a user specific shared secret key and the current time.
 
@@ -28,6 +28,7 @@ The following steps cover building, deploying, configuring and testing:
 * com.mw.totp-2fa.user.model.listener
 * com.mw.totp-2fa.activator
 * com.mw.totp_2fa.password.jsp.fragment
+* com.mw.totp_2fa.login.jsp.fragment
 4. Login to Liferay as an Administrator
 5. Go to Control Panel > Configuration > System Settings > Security > TOTP 2FA
 6. Enable the 'Login TOTP 2FA Enabled' checkbox
@@ -52,7 +53,7 @@ The following steps cover building, deploying, configuring and testing:
 3. Ensure that the phone and server time are roughly the same, if not then the generated codes may not match when the comparison is done, as the code is only valid for 30 / 60 seconds. See System Settings > TOTP 2FA > Advanced > Allow for Time Skew below to make the verification more lenient
 4. If the Google Authenticator code is red it means it is about to expire. If Allow for Time Skew is off then wait until a new one is generated before trying as a time difference of a few seconds between the phone and server means it may not work
 5. Users with the Liferay Administrator role will always bypass TOTP 2FA on login and can leave the Authenticator Code field empty
-6. A bug in the Liferay DXP 7.1 Senna / Single Page Application (SPA) implementation unexpectedly prevents the Login Modal Dialog form body fields being included in the parameterMap passed through to the Authenticator. Senna is turned off for the Login form / portlet through the login.jsp fragment to ensure this doesn't prevent the Authenticator functioning as expected
+6. A bug in the Liferay DXP 7.1 Senna / Single Page Application (SPA) implementation unexpectedly prevents the Login Modal Dialog form body fields being included in the parameterMap passed through to the Authenticator. The com.mw.totp_2fa.login.jsp.fragment module's login.jsp sets the data-senna-off attribute on the Login form via JavaScript to ensure this doesn't prevent the Authenticator functioning as expected
 7. The project uses an auth.pipeline.post Authenticator. If the regular credentials are not valid then the custom Authenticator will not be triggered
 8. QR Code URLs send by email are valid for 60 minutes by default. The user can request a new QR Code URL to be sent to their email address. The validity duration can be changed in Control Panel > Configuration > System Settings > Security > TOTP 2FA > QR Code URL Duration
 9. You can bypass 2FA checks for non-Administrator users by defining a Regular User Role, adding the users to the role and setting the System Settings > TOTP 2FA > Login TOTP 2FA Skip User Role setting
@@ -62,7 +63,7 @@ The following steps cover building, deploying, configuring and testing:
 The project consists of the following OSGi bundles:
 
 com.mw.totp-2fa.login.auth
-- Contains a Login portlet PortletFilter component that adds the Authenticator Code field to the Login screen and adds data-senna-off="true" to the Login form html tag
+- Contains a DynamicInclude component (TOTP2FALoginDynamicInclude) that renders the Authenticator Code field into the Login form, right after the password caps-lock span
 - Contains an auth.pipeline.post Authenticator component that extracts the Authenticator Code from the Login form parameters and verifies it matches one generated based on the users secretKey and the current time
 
 com.mw.totp-2fa.service
@@ -81,6 +82,9 @@ com.mw.totp-2fa.qrcode
 
 com.mw.totp_2fa.password.jsp.fragment
 - An OSGi fragment bundle (Fragment-Host: com.liferay.users.admin.web) that overrides password.jsp to add a "2FA-Authentication/QR-Code" sheet section, rendered via a `<liferay-util:dynamic-include>` tag consumed by the DynamicInclude component in com.mw.totp-2fa.qrcode
+
+com.mw.totp_2fa.login.jsp.fragment
+- An OSGi fragment bundle (Fragment-Host: com.liferay.login.web) that overrides login.jsp to add a `<liferay-util:dynamic-include>` tag inside the login form's fieldset, right after the password caps-lock span, consumed by the TOTP2FALoginDynamicInclude component in com.mw.totp-2fa.login.auth; also sets data-senna-off="true" on the Login form via JavaScript
 
 com.mw.totp-2fa.user.model.listener
 - Contains a User Model Listener component with afterCreate method to add a Secret Key when a new user is created and email a QR Code URL link to the user
